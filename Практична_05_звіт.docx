@@ -1,0 +1,155 @@
+"""Порівняльний аналіз структури Django та Flask проектів."""
+
+import os
+from pathlib import Path
+
+
+IGNORED_NAMES = {"__pycache__", "venv", "venv2", ".git", ".idea", ".vscode"}
+IGNORED_EXTENSIONS = {".pyc", ".pyo"}
+IGNORED_FILES = {"db.sqlite3"}
+
+
+def should_ignore(path: Path) -> bool:
+    """Перевіряє, чи потрібно ігнорувати файл або каталог."""
+    return (
+        path.name in IGNORED_NAMES
+        or path.name in IGNORED_FILES
+        or path.suffix in IGNORED_EXTENSIONS
+    )
+
+
+def scan_directory(path: str, prefix: str = "") -> list[str]:
+    """Рекурсивно сканує каталог та повертає дерево файлів.
+
+    Args:
+        path: шлях до каталогу.
+        prefix: відступ для форматування дерева.
+
+    Returns:
+        Список рядків зі структурою каталогу.
+    """
+    root = Path(path)
+    entries = sorted(
+        [entry for entry in root.iterdir() if not should_ignore(entry)],
+        key=lambda item: (item.is_file(), item.name.lower()),
+    )
+
+    tree = []
+    for index, entry in enumerate(entries):
+        connector = "└── " if index == len(entries) - 1 else "├── "
+        display_name = entry.name + ("/" if entry.is_dir() else "")
+        tree.append(prefix + connector + display_name)
+
+        if entry.is_dir():
+            extension = "    " if index == len(entries) - 1 else "│   "
+            tree.extend(scan_directory(str(entry), prefix + extension))
+
+    return tree
+
+
+def analyze_project(path: str) -> dict:
+    """Аналізує проект та збирає статистику.
+
+    Args:
+        path: кореневий каталог проекту.
+
+    Returns:
+        Словник зі статистикою: кількість файлів .py, .html, .css,
+        загальний розмір, список каталогів.
+    """
+    stats = {
+        "py_files": 0,
+        "html_files": 0,
+        "css_files": 0,
+        "total_size": 0,
+        "directories": [],
+    }
+
+    root = Path(path)
+    for current_root, dirnames, filenames in os.walk(root):
+        dirnames[:] = [name for name in dirnames if name not in IGNORED_NAMES]
+        current_path = Path(current_root)
+
+        if current_path != root:
+            stats["directories"].append(str(current_path.relative_to(root)))
+
+        for filename in filenames:
+            file_path = current_path / filename
+            if should_ignore(file_path):
+                continue
+
+            suffix = file_path.suffix.lower()
+            if suffix == ".py":
+                stats["py_files"] += 1
+            elif suffix == ".html":
+                stats["html_files"] += 1
+            elif suffix == ".css":
+                stats["css_files"] += 1
+
+            stats["total_size"] += file_path.stat().st_size
+
+    return stats
+
+
+def print_comparison_table(django_stats: dict, flask_stats: dict) -> None:
+    """Виводить порівняльну таблицю характеристик."""
+    rows = [
+        ("Файли .py", django_stats["py_files"], flask_stats["py_files"]),
+        ("Файли .html", django_stats["html_files"], flask_stats["html_files"]),
+        ("Файли .css", django_stats["css_files"], flask_stats["css_files"]),
+        ("Каталоги", len(django_stats["directories"]), len(flask_stats["directories"])),
+        ("Розмір (байт)", django_stats["total_size"], flask_stats["total_size"]),
+    ]
+
+    print("\n--- Порівняльна таблиця ---")
+    print("| Характеристика | Django | Flask |")
+    print("|----------------|--------|-------|")
+    for name, django_value, flask_value in rows:
+        print(f"| {name} | {django_value} | {flask_value} |")
+
+
+def compare_projects(django_path: str, flask_path: str) -> None:
+    """Порівнює два проекти та виводить таблицю відмінностей.
+
+    Args:
+        django_path: шлях до Django-проекту.
+        flask_path: шлях до Flask-проекту.
+    """
+    print("=" * 60)
+    print("ПОРІВНЯННЯ СТРУКТУРИ ПРОЕКТІВ")
+    print("=" * 60)
+
+    print(f"\n--- Django ({django_path}) ---")
+    django_tree = scan_directory(django_path)
+    for line in django_tree:
+        print(line)
+    django_stats = analyze_project(django_path)
+
+    print(f"\n--- Flask ({flask_path}) ---")
+    flask_tree = scan_directory(flask_path)
+    for line in flask_tree:
+        print(line)
+    flask_stats = analyze_project(flask_path)
+
+    print_comparison_table(django_stats, flask_stats)
+
+    print("\nКороткий висновок:")
+    print("  Django має більше автоматично створених файлів і суворішу структуру.")
+    print("  Flask має мінімальну структуру, тому більшість файлів створюються вручну.")
+
+
+def main() -> None:
+    """Основна функція програми."""
+    django_path = "mysite"
+    flask_path = "myflaskapp"
+
+    for path in [django_path, flask_path]:
+        if not os.path.isdir(path):
+            print(f"Каталог '{path}' не знайдено. Спершу виконайте попередні завдання.")
+            return
+
+    compare_projects(django_path, flask_path)
+
+
+if __name__ == "__main__":
+    main()

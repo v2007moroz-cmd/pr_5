@@ -1,0 +1,30 @@
+"""Конфігурація Flask-додатка."""
+
+import os
+
+
+class Config:
+    """Базова конфігурація."""
+
+    SECRET_KEY = "flask-practical-05-development-key"
+    DEBUG = False
+
+
+class DevelopmentConfig(Config):
+    """Конфігурація для розробки."""
+
+    DEBUG = True
+
+
+class ProductionConfig(Config):
+    """Конфігурація для production."""
+
+    SECRET_KEY = os.environ.get("SECRET_KEY", "change-this-key-in-production")
+    DEBUG = False
+
+
+config_by_name = {
+    "development": DevelopmentConfig,
+    "production": ProductionConfig,
+    "default": DevelopmentConfig,
+}

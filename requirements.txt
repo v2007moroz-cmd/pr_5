@@ -1,0 +1,96 @@
+# Практична робота №5 — Django та Flask
+
+Готовий комплект містить:
+
+- заповнені скрипти `practical_05_task_1_1.py`, `practical_05_task_1_2.py`, `practical_05_task_2_2.py`, `practical_05_task_3_2.py`;
+- готову структуру Django-проєкту `mysite/` з додатком `pages`;
+- готову структуру Flask-проєкту `myflaskapp/`;
+- файл `requirements.txt`;
+- шаблон звіту `Практична_05_звіт.docx`.
+
+## Як запускати
+
+### 1. Створення середовища
+
+```bash
+python -m venv venv
+```
+
+Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+Linux/macOS:
+
+```bash
+source venv/bin/activate
+```
+
+Оновлення pip та встановлення залежностей:
+
+```bash
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Перевірка:
+
+```bash
+python practical_05_task_1_1.py
+python practical_05_task_1_2.py
+```
+
+### 2. Django
+
+```bash
+cd mysite
+python manage.py runserver
+```
+
+Перевірити у браузері:
+
+- http://127.0.0.1:8000/
+- http://127.0.0.1:8000/about/
+- http://127.0.0.1:8000/contact/?name=Олена
+
+Потім з кореня архіву можна запустити аналізатор:
+
+```bash
+cd ..
+python practical_05_task_2_2.py
+```
+
+### 3. Flask
+
+```bash
+cd myflaskapp
+python app.py
+```
+
+Перевірити у браузері:
+
+- http://127.0.0.1:5000/
+- http://127.0.0.1:5000/about
+- http://127.0.0.1:5000/api/info
+- http://127.0.0.1:5000/greet/Олена
+- http://127.0.0.1:5000/greet?name=Олена
+
+### 4. Порівняння структур
+
+З кореня архіву:
+
+```bash
+python practical_05_task_3_2.py
+```
+
+## Що додати у звіт
+
+У файлі `Практична_05_звіт.docx` уже є структура, код і висновки. Треба лише вставити свої скриншоти:
+
+1. активація `venv`;
+2. `pip freeze`;
+3. сторінки Django у браузері;
+4. сторінки Flask у браузері;
+5. результати роботи скриптів.
